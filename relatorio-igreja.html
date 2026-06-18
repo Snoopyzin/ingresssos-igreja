@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório - Igreja de Cristo Fama</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; padding: 32px 20px; }
@@ -26,10 +26,14 @@
         .card { background: #1a1a1a; border-radius: 12px; padding: 18px 20px; border: 1px solid #2a2a2a; }
         .card-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
         .card-valor { font-size: 36px; font-weight: 700; }
-        .c-total .card-valor  { color: #3b82f6; }
-        .c-fama .card-valor   { color: #a78bfa; }
-        .c-bonfin .card-valor { color: #22c55e; }
-        .c-negrao .card-valor { color: #f59e0b; }
+        .c-total   .card-valor { color: #3b82f6; }
+        .c-entrou  .card-valor { color: #22c55e; }
+        .c-aguard  .card-valor { color: #f59e0b; }
+        .c-fama    .card-valor { color: #a78bfa; }
+        .c-bonfin  .card-valor { color: #34d399; }
+        .c-negrao  .card-valor { color: #fb923c; }
+        .c-entrou  { border-color: #22c55e44 !important; }
+        .c-aguard  { border-color: #f59e0b44 !important; }
 
         .filtros { max-width: 1000px; margin: 0 auto 16px; display: flex; gap: 10px; flex-wrap: wrap; }
         .filtro-input  { flex: 1; min-width: 180px; padding: 9px 14px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 13px; outline: none; transition: border-color 0.2s; }
@@ -58,6 +62,17 @@
         .vazio { padding: 48px; text-align: center; color: #555; font-size: 14px; }
         .aviso { max-width: 1000px; margin: 0 auto 16px; background: #1a1400; border: 1px solid #f59e0b44; border-radius: 10px; padding: 10px 16px; color: #fbbf24; font-size: 13px; }
 
+        /* Botão de entrada */
+        .btn-entrada {
+            padding: 5px 11px; border: none; border-radius: 6px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            white-space: nowrap; transition: all 0.15s;
+        }
+        .btn-entrada.pendente { background: #1a1a1a; border: 1px solid #444; color: #888; }
+        .btn-entrada.pendente:hover { border-color: #22c55e; color: #22c55e; }
+        .btn-entrada.entrou  { background: #052e16; border: 1px solid #22c55e66; color: #4ade80; }
+        tr.entrou-row { background: #051a0a !important; }
+
         .btn-wpp {
             display: inline-flex; align-items: center; gap: 5px;
             padding: 5px 12px; background: #128c43; border: none;
@@ -70,15 +85,52 @@
         /* Toast de confirmação */
         #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: #0f2a1a; border: 1px solid #22c55e44; color: #4ade80; padding: 12px 20px; border-radius: 10px; font-size: 13px; display: none; z-index: 999; text-align: center; line-height: 1.5; max-width: 360px; }
 
-        /* QR oculto para geração */
-        #qr-hidden { position: absolute; left: -9999px; top: -9999px; }
+        /* QR oculto para geração — não precisa mais de div */
+
+        /* Modal do ingresso */
+        #modal-ingresso {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.92); z-index: 1000;
+            align-items: center; justify-content: center;
+            padding: 16px; flex-direction: column; gap: 16px;
+        }
+        #modal-ingresso.ativo { display: flex; }
+        #modal-img { width: 100%; max-width: 380px; border-radius: 12px; display: block; }
+        .modal-instrucao {
+            color: #fbbf24; font-size: 14px; font-weight: 600;
+            text-align: center; line-height: 1.6;
+            background: #1a1400; border: 1px solid #f59e0b44;
+            border-radius: 10px; padding: 12px 18px; max-width: 380px; width: 100%;
+        }
+        .modal-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 380px; }
+        .btn-modal-wpp {
+            width: 100%; padding: 14px; background: #128c43;
+            border: none; border-radius: 10px; color: #fff;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+        }
+        .btn-modal-fechar {
+            width: 100%; padding: 12px; background: transparent;
+            border: 1px solid #333; border-radius: 10px; color: #999;
+            font-size: 14px; cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-<div id="qr-hidden"></div>
-
 <div id="toast"></div>
+
+<!-- Modal do ingresso -->
+<div id="modal-ingresso">
+    <div class="modal-instrucao">
+        📱 <strong>Pressione e segure a imagem</strong> para salvá-la na galeria do celular.<br>
+        Depois abra o WhatsApp e anexe no clipe 📎
+    </div>
+    <img id="modal-img" src="" alt="Ingresso">
+    <div class="modal-btns">
+        <button class="btn-modal-wpp" id="btn-modal-wpp" onclick="abrirWppModal()">📲 Abrir WhatsApp</button>
+        <button class="btn-modal-fechar" onclick="fecharModal()">Fechar</button>
+    </div>
+</div>
 
 <div class="header">
     <div>
@@ -96,11 +148,21 @@
     Dados salvos somente neste navegador. Use "Exportar CSV" para guardar uma cópia.
 </div>
 
-<div class="cards">
+<div class="cards" style="grid-template-columns: repeat(3,1fr)">
     <div class="card c-total">
-        <div class="card-label">Total</div>
+        <div class="card-label">Total cadastrados</div>
         <div class="card-valor" id="cTotal">0</div>
     </div>
+    <div class="card c-entrou">
+        <div class="card-label">Já entraram</div>
+        <div class="card-valor" id="cEntrou">0</div>
+    </div>
+    <div class="card c-aguard">
+        <div class="card-label">Aguardando</div>
+        <div class="card-valor" id="cAguard">0</div>
+    </div>
+</div>
+<div class="cards" style="grid-template-columns: repeat(3,1fr); margin-top:-10px">
     <div class="card c-fama">
         <div class="card-label">Fama</div>
         <div class="card-valor" id="cFama">0</div>
@@ -137,8 +199,8 @@
 </div>
 
 <script>
-    let todos = [];
-    let listaAtual = [];
+    let todos = [];      // array original do localStorage (ordem de inserção)
+    let listaAtual = []; // array exibido (com _origIdx para mapear de volta)
 
     function formatarTel(tel) {
         if (!tel) return '—';
@@ -166,8 +228,11 @@
     }
 
     function carregar() {
-        todos = JSON.parse(localStorage.getItem('membros-fama') || '[]').slice().reverse();
+        todos = JSON.parse(localStorage.getItem('membros-fama') || '[]');
+        const entrou = todos.filter(m => m.entrou).length;
         document.getElementById('cTotal').textContent  = todos.length;
+        document.getElementById('cEntrou').textContent = entrou;
+        document.getElementById('cAguard').textContent = todos.length - entrou;
         document.getElementById('cFama').textContent   = todos.filter(m => m.igreja === 'Fama').length;
         document.getElementById('cBonfin').textContent = todos.filter(m => m.igreja === 'Bonfinópolis').length;
         document.getElementById('cNegrao').textContent = todos.filter(m => m.igreja === 'Negrão de Lima').length;
@@ -178,30 +243,38 @@
         const termo  = document.getElementById('busca').value.toLowerCase();
         const igreja = document.getElementById('filtroIgreja').value;
         const pagto  = document.getElementById('filtroPagamento').value;
-        const lista  = todos.filter(m => {
-            const nomeOk  = (m.nome || '').toLowerCase().includes(termo) || (m.telefone || '').includes(termo.replace(/\D/g, ''));
-            const igrejaOk = !igreja || m.igreja === igreja;
-            const pagtoOk  = !pagto  || (m.pagamento || '') === pagto;
-            return nomeOk && igrejaOk && pagtoOk;
-        });
-        renderizar(lista);
+
+        listaAtual = todos
+            .map((m, idx) => ({ ...m, _origIdx: idx }))
+            .reverse()
+            .filter(m => {
+                const nomeOk   = (m.nome || '').toLowerCase().includes(termo) || (m.telefone || '').includes(termo.replace(/\D/g, ''));
+                const igrejaOk = !igreja || m.igreja === igreja;
+                const pagtoOk  = !pagto  || (m.pagamento || '') === pagto;
+                return nomeOk && igrejaOk && pagtoOk;
+            });
+        renderizar(listaAtual);
     }
 
     function renderizar(lista) {
-        listaAtual = lista;
         if (lista.length === 0) {
             document.getElementById('conteudo').innerHTML = '<div class="vazio">Nenhum membro encontrado.</div>';
             return;
         }
-        let html = '<table><thead><tr><th>#</th><th>Nome</th><th>WhatsApp</th><th>Igreja</th><th>Pagamento</th><th>Cadastrado em</th><th></th></tr></thead><tbody>';
+        let html = '<table><thead><tr><th>#</th><th>Nome</th><th>WhatsApp</th><th>Igreja</th><th>Pagamento</th><th>Entrada</th><th></th></tr></thead><tbody>';
         lista.forEach((m, i) => {
-            html += `<tr>
+            const entrou = m.entrou;
+            const btnEntrada = entrou
+                ? `<button class="btn-entrada entrou" onclick="marcarEntrada(${i})">✓ Entrou</button>`
+                : `<button class="btn-entrada pendente" onclick="marcarEntrada(${i})">Marcar entrada</button>`;
+            const rowClass = entrou ? 'entrou-row' : '';
+            html += `<tr class="${rowClass}">
                 <td style="color:#555">${i + 1}</td>
                 <td class="nome">${m.nome || '—'}</td>
                 <td>${formatarTel(m.telefone)}</td>
                 <td>${badgeIgreja(m.igreja)}</td>
                 <td>${badgePagamento(m.pagamento)}</td>
-                <td style="color:#555;font-size:12px">${formatarData(m.criadoEm)}</td>
+                <td>${btnEntrada}</td>
                 <td><button class="btn-wpp" onclick="enviarWpp(${i})">📲 WhatsApp</button></td>
             </tr>`;
         });
@@ -210,6 +283,7 @@
     }
 
     // ── Geração de ingresso e envio WhatsApp ────────────────────────
+    let wppUrlPendente = '';
 
     function enviarWpp(i) {
         const m = listaAtual[i];
@@ -227,31 +301,55 @@ ATENCAO: Este ingresso e *pessoal e intransferivel*.
 
 Que Deus abencoe! Ate la!`;
 
-        // Abre WhatsApp IMEDIATAMENTE (chamada síncrona = sem bloqueio de popup)
-        window.open('https://wa.me/55' + m.telefone + '?text=' + encodeURIComponent(msg), '_blank');
+        wppUrlPendente = 'https://wa.me/55' + m.telefone + '?text=' + encodeURIComponent(msg);
 
-        // Gera e baixa o ingresso em seguida (download não é bloqueado)
-        gerarEBaixarTicket(m);
+        // Gera o ingresso e abre o modal
+        gerarEMostrarModal(m);
     }
 
-    function gerarEBaixarTicket(m) {
-        const qrDiv = document.getElementById('qr-hidden');
-        qrDiv.innerHTML = '';
+    function gerarEMostrarModal(m) {
         const qrData = 'FAMA2026|' + m.nome + '|' + m.telefone + '|' + (m.igreja || 'Fama');
-        new QRCode(qrDiv, { text: qrData, width: 500, height: 500, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
-        setTimeout(() => {
-            gerarCartao(m.nome, formatarTel(m.telefone), m.igreja || 'Fama', function(dataURL) {
-                const link = document.createElement('a');
-                link.download = 'ingresso-' + m.nome.replace(/\s+/g, '-') + '.png';
-                link.href = dataURL; link.click();
-                mostrarToast('WhatsApp aberto! Ingresso baixado — anexe no clipe 📎 para enviar.', 'ok');
-            });
-        }, 500);
+
+        // Gera QR como dataURL diretamente — sem div oculta, funciona em qualquer dispositivo
+        QRCode.toDataURL(qrData, { width: 500, margin: 1, color: { dark: '#000000', light: '#ffffff' } }, function(err, qrUrl) {
+            if (err) { mostrarToast('Erro ao gerar QR Code.', 'err'); return; }
+
+            const qrImg = new Image();
+            qrImg.onload = function() {
+                gerarCartao(m.nome, formatarTel(m.telefone), m.igreja || 'Fama', qrImg, function(dataURL) {
+                    document.getElementById('modal-img').src = dataURL;
+                    document.getElementById('modal-ingresso').classList.add('ativo');
+                });
+            };
+            qrImg.src = qrUrl;
+        });
     }
 
-    function gerarCartao(nome, telefone, igreja, callback) {
-        const qrCanvas = document.querySelector('#qr-hidden canvas');
-        if (!qrCanvas) { enviando = false; return; }
+    function marcarEntrada(i) {
+        const m = listaAtual[i];
+        if (!m) return;
+        const origIdx = m._origIdx;
+        todos[origIdx].entrou = !todos[origIdx].entrou;
+        if (todos[origIdx].entrou) {
+            todos[origIdx].entradaEm = new Date().toISOString();
+        } else {
+            delete todos[origIdx].entradaEm;
+        }
+        localStorage.setItem('membros-fama', JSON.stringify(todos));
+        carregar();
+    }
+
+    function abrirWppModal() {
+        if (wppUrlPendente) window.open(wppUrlPendente, '_blank');
+        fecharModal();
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-ingresso').classList.remove('ativo');
+        wppUrlPendente = '';
+    }
+
+    function gerarCartao(nome, telefone, igreja, qrImg, callback) {
 
         const W = 800, H = 1000;
         const canvas = document.createElement('canvas');
@@ -283,7 +381,7 @@ Que Deus abencoe! Ate la!`;
 
         const qrSize = 450, qrX = (W - qrSize) / 2, qrY = 348;
         ctx.fillStyle = '#ffffff'; roundRect(ctx, qrX - 16, qrY - 16, qrSize + 32, qrSize + 32, 16);
-        ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
         ctx.fillStyle = '#94a3b8'; ctx.font = '18px Segoe UI, Arial, sans-serif';
         ctx.fillText('Apresente este QR Code na entrada do evento', W / 2, 862);
@@ -326,9 +424,9 @@ Que Deus abencoe! Ate la!`;
     function exportarCSV() {
         if (todos.length === 0) { alert('Nenhum dado para exportar.'); return; }
         let csv = '﻿'; // BOM UTF-8
-        csv += 'Nome,WhatsApp,Igreja,Pagamento,Cadastrado em\n';
+        csv += 'Nome,WhatsApp,Igreja,Pagamento,Status,Cadastrado em\n';
         todos.forEach(m => {
-            csv += `"${m.nome || ''}","${formatarTel(m.telefone)}","${m.igreja || ''}","${m.pagamento || ''}","${formatarData(m.criadoEm)}"\n`;
+            csv += `"${m.nome || ''}","${formatarTel(m.telefone)}","${m.igreja || ''}","${m.pagamento || ''}","${m.entrou ? 'Entrou' : 'Aguardando'}","${formatarData(m.criadoEm)}"\n`;
         });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
