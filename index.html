@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Igreja de Cristo Fama</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { max-width: 460px; width: 100%; text-align: center; }
+        .titulo-igreja { margin-bottom: 8px; }
+        .titulo-igreja h2 { font-size: 13px; color: #666; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; }
+        .titulo-igreja h1 { font-size: 30px; font-weight: 800; color: #fff; letter-spacing: 1px; }
+        .titulo-igreja h1 span { color: #3b82f6; }
+        p.sub { color: #555; font-size: 14px; margin-bottom: 32px; margin-top: 8px; }
+        .cards { display: flex; flex-direction: column; gap: 14px; }
+        .card { display: block; padding: 22px 28px; border-radius: 14px; text-decoration: none; text-align: left; transition: transform 0.15s; border: 1px solid transparent; }
+        .card:hover { transform: translateY(-2px); }
+        .card-cadastro  { background: #1a2a3a; border-color: #3b82f6; }
+        .card-validar   { background: #0f2a1a; border-color: #22c55e; }
+        .card-relatorio { background: #1a1400; border-color: #f59e0b; }
+        .card-importar  { background: #1a0a2e; border-color: #7c3aed; }
+        .card-icon  { font-size: 30px; margin-bottom: 8px; }
+        .card-title { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+        .card-cadastro  .card-title { color: #60a5fa; }
+        .card-validar   .card-title { color: #4ade80; }
+        .card-relatorio .card-title { color: #fbbf24; }
+        .card-importar  .card-title { color: #c4b5fd; }
+        .card-desc { font-size: 13px; color: #888; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="titulo-igreja">
+        <h2>Painel de ingressos</h2>
+        <h1>Igreja de Cristo <span>Fama</span></h1>
+    </div>
+    <p class="sub">Gerenciamento de membros do evento</p>
+
+    <div class="cards">
+        <a class="card card-cadastro" href="cadastro-igreja.html">
+            <div class="card-icon">🎟️</div>
+            <div class="card-title">Cadastrar membro</div>
+            <div class="card-desc">Registrar participante e gerar QR Code</div>
+        </a>
+        <a class="card card-validar" href="validar-igreja.html" target="_blank">
+            <div class="card-icon">📷</div>
+            <div class="card-title">Validar entrada</div>
+            <div class="card-desc">Escanear QR Code na porta do evento</div>
+        </a>
+        <a class="card card-relatorio" href="relatorio-igreja.html">
+            <div class="card-icon">📊</div>
+            <div class="card-title">Ver relatório</div>
+            <div class="card-desc">Lista por igreja, pagamento e filtros</div>
+        </a>
+        <a class="card card-importar" href="importar-membros.html">
+            <div class="card-icon">📥</div>
+            <div class="card-title">Importar planilha</div>
+            <div class="card-desc">Carrega os 68 membros das planilhas de uma vez</div>
+        </a>
+    </div>
+</div>
+</body>
+</html>

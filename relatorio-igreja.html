@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório - Igreja de Cristo Fama</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; padding: 32px 20px; }
+        .header { max-width: 1000px; margin: 0 auto 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .header h1 { font-size: 22px; font-weight: 800; }
+        .header h1 span { color: #3b82f6; }
+        .header p { color: #666; font-size: 13px; margin-top: 2px; }
+        .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn { padding: 9px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+        .btn-exportar  { background: #166534; border-color: #22c55e44; color: #4ade80; }
+        .btn-exportar:hover { background: #14532d; }
+        .btn-atualizar { background: transparent; border-color: #333; color: #999; }
+        .btn-atualizar:hover { border-color: #555; color: #fff; }
+        .btn-limpar    { background: transparent; border-color: #7f1d1d; color: #f87171; }
+        .btn-limpar:hover { background: #2d0808; }
+
+        .cards { max-width: 1000px; margin: 0 auto 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        @media (max-width: 700px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+        .card { background: #1a1a1a; border-radius: 12px; padding: 18px 20px; border: 1px solid #2a2a2a; }
+        .card-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .card-valor { font-size: 36px; font-weight: 700; }
+        .c-total .card-valor  { color: #3b82f6; }
+        .c-fama .card-valor   { color: #a78bfa; }
+        .c-bonfin .card-valor { color: #22c55e; }
+        .c-negrao .card-valor { color: #f59e0b; }
+
+        .filtros { max-width: 1000px; margin: 0 auto 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .filtro-input  { flex: 1; min-width: 180px; padding: 9px 14px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 13px; outline: none; transition: border-color 0.2s; }
+        .filtro-input:focus { border-color: #3b82f6; }
+        .filtro-input::placeholder { color: #555; }
+        .filtro-select { padding: 9px 14px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 13px; outline: none; appearance: none; cursor: pointer; }
+        .filtro-select option { background: #1a1a1a; }
+
+        .tabela-container { max-width: 1000px; margin: 0 auto; background: #1a1a1a; border-radius: 12px; border: 1px solid #2a2a2a; overflow: hidden; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 680px; }
+        thead th { padding: 11px 16px; text-align: left; font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #222; white-space: nowrap; }
+        tbody tr { border-bottom: 1px solid #1e1e1e; transition: background 0.15s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #222; }
+        tbody td { padding: 11px 16px; font-size: 13px; color: #ccc; }
+        td.nome { color: #fff; font-weight: 500; }
+        .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+        .badge-pix      { background: #0c4a6e; color: #38bdf8; border: 1px solid #0ea5e944; }
+        .badge-cartao   { background: #14532d; color: #4ade80; border: 1px solid #22c55e44; }
+        .badge-dinheiro { background: #1a2e05; color: #a3e635; border: 1px solid #84cc1644; }
+        .badge-oferta   { background: #2d1b69; color: #c4b5fd; border: 1px solid #8b5cf644; }
+        .badge-vazio    { color: #444; font-size: 12px; }
+        .badge-fama     { background: #1e1b4b; color: #a78bfa; border: 1px solid #7c3aed44; }
+        .badge-bonfin   { background: #052e16; color: #4ade80; border: 1px solid #22c55e44; }
+        .badge-negrao   { background: #1a1200; color: #fbbf24; border: 1px solid #f59e0b44; }
+        .vazio { padding: 48px; text-align: center; color: #555; font-size: 14px; }
+        .aviso { max-width: 1000px; margin: 0 auto 16px; background: #1a1400; border: 1px solid #f59e0b44; border-radius: 10px; padding: 10px 16px; color: #fbbf24; font-size: 13px; }
+
+        .btn-wpp {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 12px; background: #128c43; border: none;
+            border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600;
+            cursor: pointer; white-space: nowrap; transition: background 0.2s;
+        }
+        .btn-wpp:hover { background: #0f6e34; }
+        .btn-wpp:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+        /* Toast de confirmação */
+        #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: #0f2a1a; border: 1px solid #22c55e44; color: #4ade80; padding: 12px 20px; border-radius: 10px; font-size: 13px; display: none; z-index: 999; text-align: center; line-height: 1.5; max-width: 360px; }
+
+        /* QR oculto para geração */
+        #qr-hidden { position: absolute; left: -9999px; top: -9999px; }
+    </style>
+</head>
+<body>
+
+<div id="qr-hidden"></div>
+
+<div id="toast"></div>
+
+<div class="header">
+    <div>
+        <h1>Igreja de Cristo <span>Fama</span></h1>
+        <p>Lista de membros cadastrados neste dispositivo</p>
+    </div>
+    <div class="btns">
+        <button class="btn btn-exportar" onclick="exportarCSV()">Exportar CSV</button>
+        <button class="btn btn-atualizar" onclick="carregar()">Atualizar</button>
+        <button class="btn btn-limpar" onclick="limparDados()">Limpar tudo</button>
+    </div>
+</div>
+
+<div class="aviso">
+    Dados salvos somente neste navegador. Use "Exportar CSV" para guardar uma cópia.
+</div>
+
+<div class="cards">
+    <div class="card c-total">
+        <div class="card-label">Total</div>
+        <div class="card-valor" id="cTotal">0</div>
+    </div>
+    <div class="card c-fama">
+        <div class="card-label">Fama</div>
+        <div class="card-valor" id="cFama">0</div>
+    </div>
+    <div class="card c-bonfin">
+        <div class="card-label">Bonfinópolis</div>
+        <div class="card-valor" id="cBonfin">0</div>
+    </div>
+    <div class="card c-negrao">
+        <div class="card-label">Negrão de Lima</div>
+        <div class="card-valor" id="cNegrao">0</div>
+    </div>
+</div>
+
+<div class="filtros">
+    <input class="filtro-input" type="text" id="busca" placeholder="Buscar por nome ou telefone..." oninput="filtrar()">
+    <select class="filtro-select" id="filtroIgreja" onchange="filtrar()">
+        <option value="">Todas as igrejas</option>
+        <option value="Fama">Fama</option>
+        <option value="Bonfinópolis">Bonfinópolis</option>
+        <option value="Negrão de Lima">Negrão de Lima</option>
+    </select>
+    <select class="filtro-select" id="filtroPagamento" onchange="filtrar()">
+        <option value="">Todos os pagamentos</option>
+        <option value="PIX">PIX</option>
+        <option value="Cartão">Cartão</option>
+        <option value="Dinheiro">Dinheiro</option>
+        <option value="Oferta">Oferta</option>
+    </select>
+</div>
+
+<div class="tabela-container">
+    <div id="conteudo"><div class="vazio">Nenhum membro cadastrado ainda.</div></div>
+</div>
+
+<script>
+    let todos = [];
+    let listaAtual = [];
+
+    function formatarTel(tel) {
+        if (!tel) return '—';
+        if (tel.length === 11) return tel.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        if (tel.length === 10) return tel.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        return tel;
+    }
+
+    function formatarData(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function badgePagamento(p) {
+        if (!p) return '<span class="badge-vazio">—</span>';
+        const mapa = { 'PIX': 'badge-pix', 'Cartão': 'badge-cartao', 'Dinheiro': 'badge-dinheiro', 'Oferta': 'badge-oferta' };
+        return `<span class="badge ${mapa[p] || 'badge-vazio'}">${p}</span>`;
+    }
+
+    function badgeIgreja(ig) {
+        if (!ig) return '—';
+        const mapa = { 'Fama': 'badge-fama', 'Bonfinópolis': 'badge-bonfin', 'Negrão de Lima': 'badge-negrao' };
+        return `<span class="badge ${mapa[ig] || ''}">${ig}</span>`;
+    }
+
+    function carregar() {
+        todos = JSON.parse(localStorage.getItem('membros-fama') || '[]').slice().reverse();
+        document.getElementById('cTotal').textContent  = todos.length;
+        document.getElementById('cFama').textContent   = todos.filter(m => m.igreja === 'Fama').length;
+        document.getElementById('cBonfin').textContent = todos.filter(m => m.igreja === 'Bonfinópolis').length;
+        document.getElementById('cNegrao').textContent = todos.filter(m => m.igreja === 'Negrão de Lima').length;
+        filtrar();
+    }
+
+    function filtrar() {
+        const termo  = document.getElementById('busca').value.toLowerCase();
+        const igreja = document.getElementById('filtroIgreja').value;
+        const pagto  = document.getElementById('filtroPagamento').value;
+        const lista  = todos.filter(m => {
+            const nomeOk  = (m.nome || '').toLowerCase().includes(termo) || (m.telefone || '').includes(termo.replace(/\D/g, ''));
+            const igrejaOk = !igreja || m.igreja === igreja;
+            const pagtoOk  = !pagto  || (m.pagamento || '') === pagto;
+            return nomeOk && igrejaOk && pagtoOk;
+        });
+        renderizar(lista);
+    }
+
+    function renderizar(lista) {
+        listaAtual = lista;
+        if (lista.length === 0) {
+            document.getElementById('conteudo').innerHTML = '<div class="vazio">Nenhum membro encontrado.</div>';
+            return;
+        }
+        let html = '<table><thead><tr><th>#</th><th>Nome</th><th>WhatsApp</th><th>Igreja</th><th>Pagamento</th><th>Cadastrado em</th><th></th></tr></thead><tbody>';
+        lista.forEach((m, i) => {
+            html += `<tr>
+                <td style="color:#555">${i + 1}</td>
+                <td class="nome">${m.nome || '—'}</td>
+                <td>${formatarTel(m.telefone)}</td>
+                <td>${badgeIgreja(m.igreja)}</td>
+                <td>${badgePagamento(m.pagamento)}</td>
+                <td style="color:#555;font-size:12px">${formatarData(m.criadoEm)}</td>
+                <td><button class="btn-wpp" onclick="enviarWpp(${i})">📲 WhatsApp</button></td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('conteudo').innerHTML = html;
+    }
+
+    // ── Geração de ingresso e envio WhatsApp ────────────────────────
+
+    function enviarWpp(i) {
+        const m = listaAtual[i];
+        if (!m) return;
+        if (!m.telefone) { mostrarToast('Este membro não tem WhatsApp cadastrado.', 'err'); return; }
+
+        const msg =
+`Ola, ${m.nome}!
+
+Sua inscricao no evento da *Igreja de Cristo Fama* foi confirmada!
+
+Seu ingresso pessoal (QR Code) sera enviado em seguida nesta conversa. Apresente-o na entrada do evento.
+
+ATENCAO: Este ingresso e *pessoal e intransferivel*.
+
+Que Deus abencoe! Ate la!`;
+
+        // Abre WhatsApp IMEDIATAMENTE (chamada síncrona = sem bloqueio de popup)
+        window.open('https://wa.me/55' + m.telefone + '?text=' + encodeURIComponent(msg), '_blank');
+
+        // Gera e baixa o ingresso em seguida (download não é bloqueado)
+        gerarEBaixarTicket(m);
+    }
+
+    function gerarEBaixarTicket(m) {
+        const qrDiv = document.getElementById('qr-hidden');
+        qrDiv.innerHTML = '';
+        const qrData = 'FAMA2026|' + m.nome + '|' + m.telefone + '|' + (m.igreja || 'Fama');
+        new QRCode(qrDiv, { text: qrData, width: 500, height: 500, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+        setTimeout(() => {
+            gerarCartao(m.nome, formatarTel(m.telefone), m.igreja || 'Fama', function(dataURL) {
+                const link = document.createElement('a');
+                link.download = 'ingresso-' + m.nome.replace(/\s+/g, '-') + '.png';
+                link.href = dataURL; link.click();
+                mostrarToast('WhatsApp aberto! Ingresso baixado — anexe no clipe 📎 para enviar.', 'ok');
+            });
+        }, 500);
+    }
+
+    function gerarCartao(nome, telefone, igreja, callback) {
+        const qrCanvas = document.querySelector('#qr-hidden canvas');
+        if (!qrCanvas) { enviando = false; return; }
+
+        const W = 800, H = 1000;
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#1e3a5f'; ctx.fillRect(0, 0, W, 150);
+        ctx.fillStyle = '#2563eb'; ctx.fillRect(0, 140, W, 10);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#94a3b8'; ctx.font = '16px Segoe UI, Arial, sans-serif';
+        ctx.fillText('EVENTO — ' + (igreja || 'FAMA'), W / 2, 52);
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 42px Segoe UI, Arial, sans-serif';
+        ctx.fillText('IGREJA DE CRISTO', W / 2, 102);
+        ctx.fillStyle = '#60a5fa'; ctx.font = 'bold 28px Segoe UI, Arial, sans-serif';
+        ctx.fillText('FAMA', W / 2, 136);
+
+        ctx.strokeStyle = '#1e3a5f'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(60, 190); ctx.lineTo(W - 60, 190); ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8'; ctx.font = '21px Segoe UI, Arial, sans-serif';
+        ctx.fillText('Bem-vindo(a)!', W / 2, 232);
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 34px Segoe UI, Arial, sans-serif';
+        const nomeTrunc = nome.length > 30 ? nome.substring(0, 30) + '…' : nome;
+        ctx.fillText(nomeTrunc, W / 2, 280);
+        ctx.fillStyle = '#64748b'; ctx.font = '17px Segoe UI, Arial, sans-serif';
+        ctx.fillText('WhatsApp: ' + telefone, W / 2, 315);
+
+        const qrSize = 450, qrX = (W - qrSize) / 2, qrY = 348;
+        ctx.fillStyle = '#ffffff'; roundRect(ctx, qrX - 16, qrY - 16, qrSize + 32, qrSize + 32, 16);
+        ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+
+        ctx.fillStyle = '#94a3b8'; ctx.font = '18px Segoe UI, Arial, sans-serif';
+        ctx.fillText('Apresente este QR Code na entrada do evento', W / 2, 862);
+        ctx.fillStyle = '#1a1f2e'; roundRect(ctx, 60, 884, W - 120, 72, 12);
+        ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 16px Segoe UI, Arial, sans-serif';
+        ctx.fillText('INGRESSO PESSOAL E INTRANSFERIVEL', W / 2, 920);
+        ctx.fillStyle = '#94a3b8'; ctx.font = '14px Segoe UI, Arial, sans-serif';
+        ctx.fillText('O compartilhamento impossibilita sua entrada no evento.', W / 2, 945);
+
+        callback(canvas.toDataURL('image/png'));
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath(); ctx.fill();
+    }
+
+    // ── Toast ───────────────────────────────────────────────────────
+    let toastTimer;
+    function mostrarToast(msg, tipo) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.style.background  = tipo === 'ok' ? '#0f2a1a' : '#2d0808';
+        el.style.borderColor = tipo === 'ok' ? '#22c55e44' : '#ef444444';
+        el.style.color       = tipo === 'ok' ? '#4ade80'  : '#f87171';
+        el.style.display = 'block';
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // ── Outros ──────────────────────────────────────────────────────
+    function exportarCSV() {
+        if (todos.length === 0) { alert('Nenhum dado para exportar.'); return; }
+        let csv = '﻿'; // BOM UTF-8
+        csv += 'Nome,WhatsApp,Igreja,Pagamento,Cadastrado em\n';
+        todos.forEach(m => {
+            csv += `"${m.nome || ''}","${formatarTel(m.telefone)}","${m.igreja || ''}","${m.pagamento || ''}","${formatarData(m.criadoEm)}"\n`;
+        });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+        link.download = 'membros-fama-' + new Date().toISOString().slice(0, 10) + '.csv';
+        link.click();
+    }
+
+    function limparDados() {
+        if (!confirm('Apagar TODOS os cadastros? Esta ação não pode ser desfeita.')) return;
+        localStorage.removeItem('membros-fama');
+        carregar();
+    }
+
+    carregar();
+</script>
+</body>
+</html>

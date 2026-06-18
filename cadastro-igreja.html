@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Igreja de Cristo Fama</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: #1a1a1a; border-radius: 16px; padding: 40px; max-width: 500px; width: 100%; border: 1px solid #2a2a2a; }
+        .titulo { text-align: center; margin-bottom: 28px; }
+        .titulo h2 { font-size: 11px; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 4px; }
+        .titulo h1 { font-size: 24px; font-weight: 800; }
+        .titulo h1 span { color: #3b82f6; }
+        p.subtitle { color: #666; margin-bottom: 28px; font-size: 14px; text-align: center; }
+        label { display: block; font-size: 13px; color: #999; margin-bottom: 6px; font-weight: 500; }
+        input, select { width: 100%; padding: 12px 14px; background: #242424; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px; margin-bottom: 16px; outline: none; transition: border-color 0.2s; appearance: none; }
+        input:focus, select:focus { border-color: #3b82f6; }
+        select option { background: #242424; }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-principal { width: 100%; padding: 14px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-principal:hover { background: #2563eb; }
+        .msg-erro { color: #ef4444; font-size: 13px; margin-top: 10px; display: none; }
+
+        #resultado { display: none; text-align: center; }
+        #resultado h2 { color: #22c55e; font-size: 20px; margin-bottom: 6px; }
+        #resultado .subtitulo { color: #666; font-size: 13px; margin-bottom: 20px; }
+        #qrcode { display: none; }
+        #ticketPreview { width: 100%; border-radius: 12px; margin-bottom: 16px; display: block; }
+
+        .acoes { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+        .btn-salvar { width: 100%; padding: 13px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-salvar:hover { background: #16a34a; }
+        .btn-whatsapp { width: 100%; padding: 13px; background: #128c43; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-whatsapp:hover { background: #0f6e34; }
+        .aviso-wpp { background: #0f2a1a; border: 1px solid #22c55e44; color: #86efac; border-radius: 8px; padding: 10px 14px; font-size: 13px; display: none; margin-top: -4px; text-align: left; line-height: 1.5; }
+        .btn-novo { display: block; width: 100%; padding: 12px; background: transparent; border: 1px solid #333; border-radius: 8px; color: #999; font-size: 14px; cursor: pointer; margin-top: 8px; transition: border-color 0.2s, color 0.2s; }
+        .btn-novo:hover { border-color: #555; color: #fff; }
+
+        .secao-reenvio { margin-top: 24px; padding-top: 20px; border-top: 1px solid #2a2a2a; }
+        .secao-reenvio h3 { font-size: 15px; color: #999; margin-bottom: 12px; font-weight: 500; }
+        .reenvio-row { display: flex; gap: 8px; }
+        .reenvio-row input { margin-bottom: 0; flex: 1; }
+        .btn-buscar { padding: 12px 18px; background: #7c3aed; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+        .btn-buscar:hover { background: #6d28d9; }
+        .msg-reenvio { font-size: 13px; margin-top: 10px; padding: 10px 14px; border-radius: 8px; display: none; }
+        .msg-reenvio.ok  { background: #052e16; color: #4ade80; border: 1px solid #22c55e44; }
+        .msg-reenvio.err { background: #2d0808; color: #f87171; border: 1px solid #ef444444; }
+
+        .link-validar { text-align: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid #2a2a2a; }
+        .btn-validar { width: 100%; padding: 13px; background: transparent; border: 1px solid #3b82f6; border-radius: 8px; color: #3b82f6; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+        .btn-validar:hover { background: #3b82f6; color: #fff; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="titulo">
+        <h2>Evento</h2>
+        <h1>Igreja de Cristo <span>Fama</span></h1>
+    </div>
+    <p class="subtitle">Preencha os dados para gerar o ingresso</p>
+
+    <form id="formCadastro">
+        <label>Nome completo *</label>
+        <input type="text" id="nome" placeholder="Ex: João Silva" required autocomplete="off">
+
+        <label>Número de WhatsApp *</label>
+        <input type="tel" id="telefone" placeholder="(62) 99999-9999" maxlength="15" required autocomplete="off">
+
+        <div class="row2">
+            <div>
+                <label>Igreja *</label>
+                <select id="igreja" required>
+                    <option value="">Selecione...</option>
+                    <option value="Fama">Fama</option>
+                    <option value="Bonfinópolis">Bonfinópolis</option>
+                    <option value="Negrão de Lima">Negrão de Lima</option>
+                </select>
+            </div>
+            <div>
+                <label>Pagamento</label>
+                <select id="pagamento">
+                    <option value="">Não informado</option>
+                    <option value="PIX">PIX</option>
+                    <option value="Cartão">Cartão</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Oferta">Oferta</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-principal" id="btnCadastrar">Gerar QR Code</button>
+        <div class="msg-erro" id="msgErro"></div>
+    </form>
+
+    <div id="resultado">
+        <h2>✓ Ingresso gerado!</h2>
+        <p class="subtitulo">Salve e envie o ingresso ao participante</p>
+        <span id="nomeAluno" style="display:none"></span>
+        <span id="telAluno" style="display:none"></span>
+        <span id="igrejaAluno" style="display:none"></span>
+        <div id="qrcode"></div>
+        <img id="ticketPreview" alt="Ingresso">
+        <div class="acoes">
+            <button class="btn-salvar" onclick="baixarIngresso()">💾 Salvar ingresso (imagem)</button>
+            <button class="btn-whatsapp" onclick="abrirWhatsApp()">📲 Enviar por WhatsApp</button>
+        </div>
+        <div class="aviso-wpp" id="avisoWpp">
+            A imagem foi baixada automaticamente.<br>
+            No WhatsApp, clique no <strong>clipe (anexo)</strong> e selecione a imagem para enviar junto.
+        </div>
+        <button class="btn-novo" onclick="novoCadastro()">+ Cadastrar outro membro</button>
+    </div>
+
+    <div class="secao-reenvio">
+        <h3>Reenviar ingresso perdido</h3>
+        <div class="reenvio-row">
+            <input type="tel" id="telBusca" placeholder="Número de WhatsApp" maxlength="15" autocomplete="off">
+            <button class="btn-buscar" onclick="buscarIngresso()">Buscar</button>
+        </div>
+        <div class="msg-reenvio" id="msgReenvio"></div>
+    </div>
+
+    <div class="link-validar">
+        <button class="btn-validar" onclick="window.open('validar-igreja.html', '_blank')">Abrir validação de entrada</button>
+    </div>
+</div>
+
+<script>
+    function mascaraTel(el) {
+        el.addEventListener('input', function (e) {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 11) v = v.slice(0, 11);
+            if (v.length > 10)     v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            else if (v.length > 6) v = v.replace(/(\d{2})(\d{4,5})(\d{0,4})/, '($1) $2-$3');
+            else if (v.length > 2) v = v.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+            e.target.value = v;
+        });
+    }
+    mascaraTel(document.getElementById('telefone'));
+    mascaraTel(document.getElementById('telBusca'));
+
+    document.getElementById('formCadastro').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const nome     = document.getElementById('nome').value.trim();
+        const telefone = document.getElementById('telefone').value.trim();
+        const igreja   = document.getElementById('igreja').value;
+        const pagamento = document.getElementById('pagamento').value;
+        const telLimpo = telefone.replace(/\D/g, '');
+
+        document.getElementById('msgErro').style.display = 'none';
+
+        if (telLimpo.length < 10) {
+            document.getElementById('msgErro').textContent = 'Digite um número de WhatsApp válido.';
+            document.getElementById('msgErro').style.display = 'block';
+            return;
+        }
+        if (!igreja) {
+            document.getElementById('msgErro').textContent = 'Selecione a igreja.';
+            document.getElementById('msgErro').style.display = 'block';
+            return;
+        }
+
+        const membros = JSON.parse(localStorage.getItem('membros-fama') || '[]');
+        membros.push({ nome, telefone: telLimpo, igreja, pagamento, criadoEm: new Date().toISOString() });
+        localStorage.setItem('membros-fama', JSON.stringify(membros));
+
+        exibirIngresso(nome, telefone, telLimpo, igreja);
+    });
+
+    function exibirIngresso(nome, telFormatado, telLimpo, igreja) {
+        document.getElementById('formCadastro').style.display = 'none';
+        document.getElementById('resultado').style.display = 'block';
+        document.getElementById('nomeAluno').textContent = nome;
+        document.getElementById('telAluno').textContent = telLimpo;
+        document.getElementById('igrejaAluno').textContent = igreja;
+
+        const qrData = 'FAMA2026|' + nome + '|' + telLimpo + '|' + igreja;
+        const qrDiv = document.getElementById('qrcode');
+        qrDiv.innerHTML = '';
+        new QRCode(qrDiv, { text: qrData, width: 500, height: 500, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+        setTimeout(() => gerarCartao(nome, telFormatado, igreja), 300);
+    }
+
+    function abrirWhatsApp() {
+        const nome  = document.getElementById('nomeAluno').textContent;
+        const tel   = document.getElementById('telAluno').textContent;
+        baixarIngresso();
+        const msg =
+`Ola, ${nome}!
+
+Sua inscricao no evento da *Igreja de Cristo Fama* foi confirmada!
+
+Seu ingresso pessoal (QR Code) sera enviado em seguida nesta conversa. Apresente-o na entrada do evento.
+
+ATENCAO: Este ingresso e *pessoal e intransferivel*.
+
+Que Deus abencoe! Ate la!`;
+        setTimeout(() => {
+            window.open('https://wa.me/55' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+            document.getElementById('avisoWpp').style.display = 'block';
+        }, 600);
+    }
+
+    let ticketDataURL = '';
+
+    function gerarCartao(nome, telefone, igreja) {
+        const qrCanvas = document.querySelector('#qrcode canvas');
+        if (!qrCanvas) return;
+        const W = 800, H = 1000;
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#1e3a5f'; ctx.fillRect(0, 0, W, 150);
+        ctx.fillStyle = '#2563eb'; ctx.fillRect(0, 140, W, 10);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#94a3b8'; ctx.font = '16px Segoe UI, Arial, sans-serif';
+        ctx.fillText('EVENTO — ' + (igreja || 'FAMA'), W / 2, 52);
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 42px Segoe UI, Arial, sans-serif';
+        ctx.fillText('IGREJA DE CRISTO', W / 2, 102);
+        ctx.fillStyle = '#60a5fa'; ctx.font = 'bold 28px Segoe UI, Arial, sans-serif';
+        ctx.fillText('FAMA', W / 2, 136);
+
+        ctx.strokeStyle = '#1e3a5f'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(60, 190); ctx.lineTo(W - 60, 190); ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8'; ctx.font = '21px Segoe UI, Arial, sans-serif';
+        ctx.fillText('Bem-vindo(a)!', W / 2, 232);
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 34px Segoe UI, Arial, sans-serif';
+        const nomeTrunc = nome.length > 30 ? nome.substring(0, 30) + '…' : nome;
+        ctx.fillText(nomeTrunc, W / 2, 280);
+        ctx.fillStyle = '#64748b'; ctx.font = '17px Segoe UI, Arial, sans-serif';
+        ctx.fillText('WhatsApp: ' + telefone, W / 2, 315);
+
+        const qrSize = 450, qrX = (W - qrSize) / 2, qrY = 348;
+        ctx.fillStyle = '#ffffff'; roundRect(ctx, qrX - 16, qrY - 16, qrSize + 32, qrSize + 32, 16);
+        ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+
+        ctx.fillStyle = '#94a3b8'; ctx.font = '18px Segoe UI, Arial, sans-serif';
+        ctx.fillText('Apresente este QR Code na entrada do evento', W / 2, 862);
+        ctx.fillStyle = '#1a1f2e'; roundRect(ctx, 60, 884, W - 120, 72, 12);
+        ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 16px Segoe UI, Arial, sans-serif';
+        ctx.fillText('INGRESSO PESSOAL E INTRANSFERIVEL', W / 2, 920);
+        ctx.fillStyle = '#94a3b8'; ctx.font = '14px Segoe UI, Arial, sans-serif';
+        ctx.fillText('O compartilhamento impossibilita sua entrada no evento.', W / 2, 945);
+
+        ticketDataURL = canvas.toDataURL('image/png');
+        document.getElementById('ticketPreview').src = ticketDataURL;
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath(); ctx.fill();
+    }
+
+    function baixarIngresso() {
+        if (!ticketDataURL) return;
+        const nome = document.getElementById('nomeAluno').textContent;
+        const link = document.createElement('a');
+        link.download = 'ingresso-' + nome.replace(/\s+/g, '-') + '.png';
+        link.href = ticketDataURL; link.click();
+    }
+
+    function buscarIngresso() {
+        const val = document.getElementById('telBusca').value.trim();
+        const telLimpo = val.replace(/\D/g, '');
+        const msgEl = document.getElementById('msgReenvio');
+        msgEl.style.display = 'none';
+
+        if (telLimpo.length < 10) {
+            msgEl.className = 'msg-reenvio err';
+            msgEl.textContent = 'Digite um número válido.';
+            msgEl.style.display = 'block';
+            return;
+        }
+
+        const membros = JSON.parse(localStorage.getItem('membros-fama') || '[]');
+        const encontrado = membros.find(m => m.telefone === telLimpo);
+
+        if (!encontrado) {
+            msgEl.className = 'msg-reenvio err';
+            msgEl.textContent = 'Nenhum cadastro encontrado para este número.';
+            msgEl.style.display = 'block';
+            return;
+        }
+
+        exibirIngresso(encontrado.nome, val, telLimpo, encontrado.igreja || 'Fama');
+        msgEl.className = 'msg-reenvio ok';
+        msgEl.textContent = '✓ Ingresso encontrado para ' + encontrado.nome + '.';
+        msgEl.style.display = 'block';
+    }
+
+    function novoCadastro() {
+        document.getElementById('formCadastro').reset();
+        document.getElementById('formCadastro').style.display = 'block';
+        document.getElementById('resultado').style.display = 'none';
+        document.getElementById('qrcode').innerHTML = '';
+        document.getElementById('avisoWpp').style.display = 'none';
+        document.getElementById('telBusca').value = '';
+        document.getElementById('msgReenvio').style.display = 'none';
+        ticketDataURL = '';
+    }
+</script>
+</body>
+</html>

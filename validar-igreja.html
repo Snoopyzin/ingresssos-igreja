@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validar Entrada - Igreja de Cristo Fama</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { max-width: 460px; width: 100%; }
+        .titulo { text-align: center; margin-bottom: 20px; }
+        .titulo h2 { font-size: 11px; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 4px; }
+        .titulo h1 { font-size: 22px; font-weight: 800; }
+        .titulo h1 span { color: #3b82f6; }
+        .subtitle { color: #666; text-align: center; font-size: 14px; margin-bottom: 20px; }
+        #reader { background: #1a1a1a; border-radius: 14px; overflow: hidden; border: 2px solid #2a2a2a; }
+        #resultado { display: none; border-radius: 14px; padding: 36px 28px; text-align: center; }
+        #resultado.sucesso { background: #071c0f; border: 2px solid #22c55e; }
+        #resultado.erro    { background: #1a0606; border: 2px solid #ef4444; }
+        .icone { font-size: 72px; margin-bottom: 12px; line-height: 1; }
+        .status-texto { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+        .sucesso .status-texto { color: #22c55e; }
+        .erro    .status-texto { color: #ef4444; }
+        .info-membro { border-radius: 10px; padding: 16px; margin-bottom: 24px; text-align: left; }
+        .sucesso .info-membro { background: rgba(34,197,94,0.08); }
+        .erro    .info-membro { background: rgba(239,68,68,0.08); }
+        .info-membro p { font-size: 15px; color: #999; margin-bottom: 8px; }
+        .info-membro p:last-child { margin-bottom: 0; }
+        .info-membro strong { color: #fff; }
+        .btn-proximo { padding: 13px 36px; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-proximo:hover { background: #2563eb; }
+        .contador { text-align: center; color: #555; font-size: 13px; margin-top: 16px; }
+        .contador span { color: #22c55e; font-weight: 700; font-size: 18px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="titulo">
+        <h2>Validação de entrada</h2>
+        <h1>Igreja de Cristo <span>Fama</span></h1>
+    </div>
+    <p class="subtitle">Aponte a câmera para o QR Code do participante</p>
+    <div id="reader"></div>
+    <div id="resultado">
+        <div class="icone" id="icone"></div>
+        <div class="status-texto" id="statusTexto"></div>
+        <div class="info-membro" id="infoMembro" style="display:none">
+            <p>Nome: <strong id="nomeMembro"></strong></p>
+            <p>WhatsApp: <strong id="telMembro"></strong></p>
+            <p>Igreja: <strong id="igrejaMembro"></strong></p>
+        </div>
+        <button class="btn-proximo" onclick="escanearProximo()">Escanear próximo</button>
+    </div>
+    <div class="contador" id="contador" style="display:none">
+        Entradas validadas: <span id="totalEntradas">0</span>
+    </div>
+</div>
+<script>
+    let scanner = null;
+    let processando = false;
+    let totalEntradas = 0;
+
+    function iniciarScanner() {
+        document.getElementById('reader').style.display = 'block';
+        document.getElementById('resultado').style.display = 'none';
+        scanner = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 260, height: 260 } };
+        scanner.start({ facingMode: "environment" }, config, onScanSuccess, () => {})
+            .catch(() => scanner.start({ facingMode: "user" }, config, onScanSuccess, () => {}));
+    }
+
+    async function onScanSuccess(texto) {
+        if (processando) return;
+        processando = true;
+        if (scanner) { await scanner.stop().catch(() => {}); scanner = null; }
+        document.getElementById('reader').style.display = 'none';
+
+        if (texto.startsWith('FAMA2026|')) {
+            const partes = texto.split('|');
+            const nome   = partes[1] || '—';
+            const tel    = partes[2] || '';
+            const igreja = partes[3] || '—';
+
+            const div = document.getElementById('resultado');
+            div.style.display = 'block'; div.className = 'resultado sucesso';
+            document.getElementById('icone').textContent = '✅';
+            document.getElementById('statusTexto').textContent = 'ENTRADA LIBERADA';
+            document.getElementById('infoMembro').style.display = 'block';
+            document.getElementById('nomeMembro').textContent = nome;
+            document.getElementById('telMembro').textContent = formatarTel(tel);
+            document.getElementById('igrejaMembro').textContent = igreja;
+            totalEntradas++;
+            document.getElementById('totalEntradas').textContent = totalEntradas;
+            document.getElementById('contador').style.display = 'block';
+        } else {
+            const div = document.getElementById('resultado');
+            div.style.display = 'block'; div.className = 'resultado erro';
+            document.getElementById('icone').textContent = '❌';
+            document.getElementById('statusTexto').textContent = 'QR CODE INVÁLIDO';
+            document.getElementById('infoMembro').style.display = 'none';
+        }
+    }
+
+    function formatarTel(tel) {
+        if (!tel) return '—';
+        if (tel.length === 11) return tel.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        if (tel.length === 10) return tel.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        return tel;
+    }
+
+    function escanearProximo() {
+        processando = false;
+        document.getElementById('resultado').style.display = 'none';
+        iniciarScanner();
+    }
+
+    iniciarScanner();
+</script>
+</body>
+</html>
