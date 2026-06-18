@@ -20,6 +20,8 @@
         .btn-atualizar:hover { border-color: #555; color: #fff; }
         .btn-limpar    { background: transparent; border-color: #7f1d1d; color: #f87171; }
         .btn-limpar:hover { background: #2d0808; }
+        .btn-importar  { background: #2e1065; border-color: #7c3aed44; color: #c4b5fd; }
+        .btn-importar:hover { background: #3b0764; }
 
         .cards { max-width: 1000px; margin: 0 auto 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
         @media (max-width: 700px) { .cards { grid-template-columns: repeat(2, 1fr); } }
@@ -140,7 +142,6 @@
     <div class="btns">
         <button class="btn btn-exportar" onclick="exportarCSV()">Exportar CSV</button>
         <button class="btn btn-atualizar" onclick="carregar()">Atualizar</button>
-        <button class="btn btn-limpar" onclick="limparDados()">Limpar tudo</button>
     </div>
 </div>
 
@@ -436,12 +437,98 @@ Que Deus abencoe! Ate la!`;
         link.click();
     }
 
-    function limparDados() {
-        if (!confirm('Apagar TODOS os cadastros? Esta ação não pode ser desfeita.')) return;
-        localStorage.removeItem('membros-fama');
-        carregar();
+    // ── Importação de membros ────────────────────────────────────────
+    const MEMBROS_LISTA = [
+      {nome:"GENESI SANTOS DA SILVA CARVALHO",      telefone:"62999230299", igreja:"Fama", pagamento:""},
+      {nome:"MARIA LUISA RANGEL",                   telefone:"62981361442", igreja:"Fama", pagamento:"PIX"},
+      {nome:"SARAH CRISTINA CABRAL DE MELO",        telefone:"62982080585", igreja:"Fama", pagamento:"PIX"},
+      {nome:"ADA MENDES PEREIRA",                   telefone:"6298267599",  igreja:"Fama", pagamento:""},
+      {nome:"FERNANDA CRUVINEL MARTINS CORREA",     telefone:"62982252128", igreja:"Fama", pagamento:"PIX"},
+      {nome:"MARLENE MARIA LIMA",                   telefone:"62981226526", igreja:"Fama", pagamento:"PIX"},
+      {nome:"MARESSA ROBERTI",                      telefone:"62983245479", igreja:"Fama", pagamento:"PIX"},
+      {nome:"MARIA ESTER DOS REIS",                 telefone:"62981753091", igreja:"Fama", pagamento:"Dinheiro"},
+      {nome:"YARA MARQUES DE JESUS",                telefone:"62992206837", igreja:"Fama", pagamento:""},
+      {nome:"KATIA VALERIA MARQUES",                telefone:"62991171777", igreja:"Fama", pagamento:"Cartão"},
+      {nome:"CRISTIANE DE PAULA FLEURY",            telefone:"62981316533", igreja:"Fama", pagamento:"PIX"},
+      {nome:"RITA KASSIA MEDEIROS LIRA",            telefone:"62984996779", igreja:"Fama", pagamento:"PIX"},
+      {nome:"CAMILA RODRIGUES FARIAS",              telefone:"62984525353", igreja:"Fama", pagamento:""},
+      {nome:"NATHANI DE SILVA LIMA",                telefone:"62982665659", igreja:"Fama", pagamento:""},
+      {nome:"IARA AUGUSTA FERREIRA",                telefone:"62981955674", igreja:"Fama", pagamento:"Cartão"},
+      {nome:"SOFIA RODRIGUES MARTINS",              telefone:"62996084161", igreja:"Fama", pagamento:"PIX"},
+      {nome:"ELIAN MEDEIROS LIRA",                  telefone:"64996642734", igreja:"Fama", pagamento:"PIX"},
+      {nome:"CLERES RAIOL PIMENTEL",                telefone:"96981002846", igreja:"Fama", pagamento:"PIX"},
+      {nome:"MARIA JULIA RANGEL BORGES",            telefone:"62984443741", igreja:"Fama", pagamento:"PIX"},
+      {nome:"AMANDA VIEIRA CAMPOS",                 telefone:"62996640023", igreja:"Fama", pagamento:""},
+      {nome:"JULYANNE CHAGAS DE MORAIS",            telefone:"62992540943", igreja:"Fama", pagamento:""},
+      {nome:"MARIA GABRIELA RANGEL BORGES",         telefone:"62984443741", igreja:"Fama", pagamento:"PIX"},
+      {nome:"LAURA MENDONCA",                       telefone:"62995483012", igreja:"Fama", pagamento:"PIX"},
+      {nome:"TEREZA MARIA",                         telefone:"62982004714", igreja:"Fama", pagamento:"PIX"},
+      {nome:"WAGNERIA DOS SANTOS SILVA",            telefone:"62985481442", igreja:"Fama", pagamento:"PIX"},
+      {nome:"MARIA JOSE DOS SANTOS SILVA",          telefone:"62985301503", igreja:"Fama", pagamento:"PIX"},
+      {nome:"ANDRE LUIZ GOMES CAMARGO",             telefone:"62985072441", igreja:"Fama", pagamento:""},
+      {nome:"ERISVAN OLIVEIRA PINTO",               telefone:"62992593934", igreja:"Fama", pagamento:""},
+      {nome:"MATEUS FELIPE EUFRASIO DO NASCIMENTO", telefone:"62981719010", igreja:"Fama", pagamento:"PIX"},
+      {nome:"JOSIMAR COSTA SANTOS ROSA",            telefone:"96981182789", igreja:"Fama", pagamento:"PIX"},
+      {nome:"MAICON DOUGLAS",                       telefone:"61998217344", igreja:"Fama", pagamento:""},
+      {nome:"RENATO RICHARD FLORES",                telefone:"62996868663", igreja:"Fama", pagamento:"PIX"},
+      {nome:"ISAQUE GOMES DA SILVA",                telefone:"62985072441", igreja:"Fama", pagamento:""},
+      {nome:"WESTONY CIPRIANO DOS SANTOS",          telefone:"62992725727", igreja:"Fama", pagamento:""},
+      {nome:"VICTOR PEREIRA ROBERTI",               telefone:"62982209252", igreja:"Fama", pagamento:"PIX"},
+      {nome:"CLAUDIO V. ROBERTI JUNIOR",            telefone:"62981690708", igreja:"Fama", pagamento:"Oferta"},
+      {nome:"ROGERIO RICHARD DE OLIVEIRA",          telefone:"",            igreja:"Fama", pagamento:"Oferta"},
+      {nome:"KLEYMER COSTA OLIVEIRA",               telefone:"62982665659", igreja:"Fama", pagamento:""},
+      {nome:"DANIEL ROCHA TEIXEIRA",                telefone:"62985288174", igreja:"Fama", pagamento:"PIX"},
+      {nome:"DARIO DE SALVATORE",                   telefone:"62995571919", igreja:"Fama", pagamento:"Não informado"},
+      {nome:"VALDIVINO BORGES DA SILVA",            telefone:"6299507949",  igreja:"Fama", pagamento:""},
+      {nome:"RONI RODRIGUES MAIA",                  telefone:"62981913209", igreja:"Fama", pagamento:""},
+      {nome:"KAYAN VIEIRA CAMPOS",                  telefone:"62994039742", igreja:"Fama", pagamento:""},
+      {nome:"JACKSON FERREIRA RABELO",              telefone:"62995087079", igreja:"Fama", pagamento:""},
+      {nome:"RAIMUNDO NONATO DA CONCEICAO JUNIOR",  telefone:"62985481442", igreja:"Fama", pagamento:"PIX"},
+      {nome:"HELLDER BRITO DA SILVA",               telefone:"62985524380", igreja:"Fama", pagamento:"PIX"},
+      {nome:"JOSE DOMINGOS ALVES",                  telefone:"62991093310", igreja:"Fama", pagamento:"PIX"},
+      {nome:"MATEUS RAIOL SANTAROSA",               telefone:"96984007576", igreja:"Fama", pagamento:""},
+      {nome:"TIAGO DE MELO XAVIER",                 telefone:"62993874478", igreja:"Fama", pagamento:"PIX"},
+      {nome:"GUSTAVO HENRIQUE GUIMARÃES LEITE",     telefone:"62985449935", igreja:"Fama", pagamento:"PIX"},
+      {nome:"RODRIGO GUIMARÃES",                    telefone:"",            igreja:"Fama", pagamento:""},
+      {nome:"ISABEL FERNANDA PORTO",                telefone:"6299173190",  igreja:"Fama", pagamento:"PIX"},
+      {nome:"TÂMARA AZEVEDO SILVA",                 telefone:"62994916892", igreja:"Fama", pagamento:"PIX"},
+      {nome:"MARCIA CARVALHO RAMOS",                telefone:"62981861138", igreja:"Fama", pagamento:"Oferta"},
+      {nome:"SUZIANNE MORAIS",                      telefone:"62994622684", igreja:"Fama", pagamento:"PIX"},
+      {nome:"MARIA CLARA GUIMARÃES",                telefone:"",            igreja:"Fama", pagamento:""},
+      {nome:"LIGIANE SILVA DE AQUINO MELO",         telefone:"87988415026", igreja:"Negrão de Lima", pagamento:"PIX"},
+      {nome:"RENATA LINO FERREIRA",                 telefone:"62998681485", igreja:"Negrão de Lima", pagamento:"PIX"},
+      {nome:"VICTOR GABRIEL SILVA COSTA",           telefone:"62993798939", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"KEREN KALLITA DIONIZIO DE SOUZA",      telefone:"62992773626", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"FRANCISCO LIRA DO NASCIMENTO",         telefone:"62994943045", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"VANESSA BIZERRA DOS SANTOS",           telefone:"62996151316", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"DENILSON SILVA ALMEIDA",               telefone:"6294944135",  igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"ELIANDERSON NATANAEL ALVES ROCHA",     telefone:"62991458962", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"FERNANDO JOSE DE ANDRADE",             telefone:"",            igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"KENEDY RIBEIRO FREITAS",               telefone:"62991312690", igreja:"Bonfinópolis", pagamento:""},
+      {nome:"LAYZA RIBEIRO BARBOSA",                telefone:"62995624507", igreja:"Bonfinópolis", pagamento:""},
+      {nome:"JOSE AUGUSTO VEIRA LEAO",              telefone:"61993135802", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"DAVI LIMA SILVA",                      telefone:"62984239974", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"ANTONIO MEDEIRO DA SILVA",             telefone:"62984239974", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"ELEUZA DA COSTA SANTOS",               telefone:"62994010933", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"JOSE CLAUDIANO ROCHA ALVES",           telefone:"62985758365", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"ADRIANA ALVES DA ROCHA",               telefone:"62984354891", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"KEILIANE BONFIM CORREA DE SOUSA",      telefone:"62991561917", igreja:"Bonfinópolis", pagamento:"PIX"},
+      {nome:"SABRINA ALVES PEREIRA",                telefone:"61991733046", igreja:"Bonfinópolis", pagamento:""},
+      {nome:"ANIZIO ALVES DA SILVA",                telefone:"61991733046", igreja:"Bonfinópolis", pagamento:""},
+      {nome:"TEREZINHA MARIS DE ALMEIDA",           telefone:"61991733046", igreja:"Bonfinópolis", pagamento:""},
+    ];
+
+    function importarAutomatico() {
+        // Importa sempre que não houver dados — independente de flags antigas
+        const temDados = JSON.parse(localStorage.getItem('membros-fama') || '[]').length > 0;
+        if (temDados) return;
+        const agora = new Date().toISOString();
+        const lista = MEMBROS_LISTA.map(m => ({ nome: m.nome, telefone: m.telefone, igreja: m.igreja, pagamento: m.pagamento, criadoEm: agora }));
+        localStorage.setItem('membros-fama', JSON.stringify(lista));
+        localStorage.setItem('membros-fama-importado', 'sim');
     }
 
+    importarAutomatico();
     carregar();
 </script>
 </body>
