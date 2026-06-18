@@ -39,19 +39,19 @@
     </div>
 
     <div class="resumo">
-        <div class="res-card"><div class="val">47</div><div class="lab">Fama</div></div>
+        <div class="res-card"><div class="val">56</div><div class="lab">Fama</div></div>
         <div class="res-card"><div class="val">19</div><div class="lab">Bonfinópolis</div></div>
         <div class="res-card"><div class="val">2</div><div class="lab">Negrão de Lima</div></div>
     </div>
 
     <div class="aviso">
-        Esta página importa os <strong>68 membros</strong> das planilhas de uma vez.<br>
+        Esta página importa os <strong>77 membros</strong> das planilhas de uma vez.<br>
         Os dados ficam salvos neste navegador/dispositivo.<br>
         Se já existirem membros, os novos serão <strong>adicionados</strong> sem apagar os existentes.
     </div>
 
     <div id="formImport">
-        <button class="btn-importar" id="btnImportar" onclick="importar()">Importar 68 membros agora</button>
+        <button class="btn-importar" id="btnImportar" onclick="importar()">Importar 77 membros agora</button>
         <button class="btn-voltar" onclick="window.location.href='index-igreja.html'">Voltar ao painel</button>
     </div>
 
@@ -117,6 +117,17 @@ const MEMBROS = [
   {nome:"RAIMUNDO NONATO DA CONCEICAO JUNIOR",  telefone:"62985481442", igreja:"Fama", pagamento:"PIX"},
   {nome:"HELLDER BRITO DA SILVA",               telefone:"62985524380", igreja:"Fama", pagamento:"PIX"},
   {nome:"JOSE DOMINGOS ALVES",                  telefone:"62991093310", igreja:"Fama", pagamento:"PIX"},
+  // ── FAMA – Homens (novos) ────────────────────────────────────────
+  {nome:"MATEUS RAIOL SANTAROSA",               telefone:"96984007576", igreja:"Fama", pagamento:""},
+  {nome:"TIAGO DE MELO XAVIER",                 telefone:"62993874478", igreja:"Fama", pagamento:"PIX"},
+  {nome:"GUSTAVO HENRIQUE GUIMARÃES LEITE",     telefone:"62985449935", igreja:"Fama", pagamento:"PIX"},
+  {nome:"RODRIGO GUIMARÃES",                    telefone:"",            igreja:"Fama", pagamento:""},
+  // ── FAMA – Mulheres (novos) ──────────────────────────────────────
+  {nome:"ISABEL FERNANDA PORTO",                telefone:"6299173190",  igreja:"Fama", pagamento:"PIX"},
+  {nome:"TÂMARA AZEVEDO SILVA",                 telefone:"62994916892", igreja:"Fama", pagamento:"PIX"},
+  {nome:"MARCIA CARVALHO RAMOS",                telefone:"62981861138", igreja:"Fama", pagamento:"Oferta"},
+  {nome:"SUZIANNE MORAIS",                      telefone:"62994622684", igreja:"Fama", pagamento:"PIX"},
+  {nome:"MARIA CLARA GUIMARÃES",                telefone:"",            igreja:"Fama", pagamento:""},
   // ── Negrão de Lima ──────────────────────────────────────────────
   {nome:"LIGIANE SILVA DE AQUINO MELO",         telefone:"87988415026", igreja:"Negrão de Lima", pagamento:"PIX"},
   {nome:"RENATA LINO FERREIRA",                 telefone:"62998681485", igreja:"Negrão de Lima", pagamento:"PIX"},
@@ -128,7 +139,7 @@ const MEMBROS = [
   {nome:"DENILSON SILVA ALMEIDA",               telefone:"6294944135",  igreja:"Bonfinópolis", pagamento:"PIX"},
   {nome:"ELIANDERSON NATANAEL ALVES ROCHA",     telefone:"62991458962", igreja:"Bonfinópolis", pagamento:"PIX"},
   {nome:"FERNANDO JOSE DE ANDRADE",             telefone:"",            igreja:"Bonfinópolis", pagamento:"PIX"},
-  {nome:"VICTOR HUGO LOPES CARVALHO MENDES",    telefone:"62995305518", igreja:"Bonfinópolis", pagamento:""},
+  {nome:"KENEDY RIBEIRO FREITAS",                telefone:"62991312690", igreja:"Bonfinópolis", pagamento:""},
   {nome:"LAYZA RIBEIRO BARBOSA",                telefone:"62995624507", igreja:"Bonfinópolis", pagamento:""},
   {nome:"JOSE AUGUSTO VEIRA LEAO",              telefone:"61993135802", igreja:"Bonfinópolis", pagamento:"PIX"},
   {nome:"DAVI LIMA SILVA",                      telefone:"62984239974", igreja:"Bonfinópolis", pagamento:"PIX"},
@@ -141,6 +152,18 @@ const MEMBROS = [
   {nome:"ANIZIO ALVES DA SILVA",                telefone:"61991733046", igreja:"Bonfinópolis", pagamento:""},
   {nome:"TEREZINHA MARIS DE ALMEIDA",           telefone:"61991733046", igreja:"Bonfinópolis", pagamento:""},
 ];
+
+function verificarBloqueio() {
+    if (localStorage.getItem('membros-fama-importado') === 'sim') {
+        document.getElementById('formImport').style.display = 'none';
+        document.getElementById('resultado').style.display = 'block';
+        document.getElementById('tituloResultado').textContent = '⚠️ Importação já realizada';
+        document.getElementById('tituloResultado').style.color = '#f59e0b';
+        document.getElementById('textoResultado').textContent = 'Os 77 membros já foram importados neste dispositivo. Importar novamente causaria duplicatas.';
+        document.getElementById('log').style.display = 'none';
+        document.querySelector('#resultado .btn-importar').style.display = 'none';
+    }
+}
 
 function importar() {
     const btn = document.getElementById('btnImportar');
@@ -160,12 +183,15 @@ function importar() {
     });
 
     localStorage.setItem('membros-fama', JSON.stringify(existentes));
+    localStorage.setItem('membros-fama-importado', 'sim');
 
     document.getElementById('formImport').style.display = 'none';
     document.getElementById('resultado').style.display = 'block';
     document.getElementById('textoResultado').textContent = adicionados + ' membros importados com sucesso.';
     document.getElementById('log').innerHTML = logHtml;
 }
+
+verificarBloqueio();
 </script>
 </body>
 </html>

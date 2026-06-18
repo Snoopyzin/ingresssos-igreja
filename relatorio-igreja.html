@@ -248,7 +248,9 @@
             .map((m, idx) => ({ ...m, _origIdx: idx }))
             .reverse()
             .filter(m => {
-                const nomeOk   = (m.nome || '').toLowerCase().includes(termo) || (m.telefone || '').includes(termo.replace(/\D/g, ''));
+                const termDigits = termo.replace(/\D/g, '');
+                const nomeOk = (m.nome || '').toLowerCase().includes(termo) ||
+                    (termDigits.length > 0 && (m.telefone || '').includes(termDigits));
                 const igrejaOk = !igreja || m.igreja === igreja;
                 const pagtoOk  = !pagto  || (m.pagamento || '') === pagto;
                 return nomeOk && igrejaOk && pagtoOk;
