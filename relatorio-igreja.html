@@ -294,15 +294,21 @@
         if (!m.telefone) { mostrarToast('Este membro não tem WhatsApp cadastrado.', 'err'); return; }
 
         const msg =
-`Ola, ${m.nome}!
+`Olá, ${m.nome}!
 
-Sua inscricao no evento da *Igreja de Cristo Fama* foi confirmada!
+Esse é o seu QRCODE para entrada no Encontro da *Igreja de Cristo Fama*
 
-Seu ingresso pessoal (QR Code) sera enviado em seguida nesta conversa. Apresente-o na entrada do evento.
+*Salve o ingresso* pressionando e segurando a imagem acima para salvá-la na galeria do seu celular.
 
-ATENCAO: Este ingresso e *pessoal e intransferivel*.
+Apresente-o na entrada para o responsável que estará na recepção para facilitar o fluxo da entrada.
 
-Que Deus abencoe! Ate la!`;
+Te esperamos no sábado dia *20/06 às 8:00h da manhã* na Igreja de Cristo.
+
+Desejamos que esse seja um dia cheio da presença de Deus! Até lá!
+
+*Igreja de Cristo Fama*
+R. 42, 1 - St. Centro Oeste, Goiânia - GO, 74560-620
+https://maps.google.com/?q=R.+42,+1,+Setor+Centro+Oeste,+Goiania,+GO,+74560-620`;
 
         wppUrlPendente = 'https://wa.me/55' + m.telefone + '?text=' + encodeURIComponent(msg);
 
